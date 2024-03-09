@@ -1,0 +1,19 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
