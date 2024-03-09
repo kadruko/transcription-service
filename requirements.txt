@@ -1,0 +1,7 @@
+Flask
+uuid
+flask-restful
+python-dotenv
+openai-whisper
+pydub
+numpy
