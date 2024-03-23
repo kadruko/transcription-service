@@ -2,7 +2,7 @@ import numpy as np
 import whisper
 from pydub import AudioSegment
 
-model = whisper.load_model("small")
+model = whisper.load_model("large")
 
 
 class Audio:
