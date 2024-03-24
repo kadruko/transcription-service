@@ -22,7 +22,7 @@ class TranscriptionController(Resource):
             audio = Audio(path)
             transcription = audio.transcribe()
             return transcription
-        def transcribe_with_speaker(path):
+        def transcribe_with_speaker(path, features):
             base_path = path.split('.pcm')[0]
             wav_path = f'{base_path}.wav'
             with open(path, "rb") as inp_f:
@@ -49,13 +49,17 @@ class TranscriptionController(Resource):
                     audio.audio[start:end].export(section_path, format='wav')
                     section_paths.append(section_path)
                     section_audio = Audio(section_path)
-                    transcription = section_audio.transcribe()
-                    response.append({
+                    content = section_audio.transcribe()
+                    item = {
                         'speaker': s[0].split()[-1],
-                        'transcription': transcription,
+                        'content': content,
                         'start': start,
                         'end': end
-                    })
+                    }
+                    if 'embedding' in features:
+                        embedding = section_audio.embed()
+                        item['embedding'] = embedding.tolist()
+                    response.append(item)
                 return response
             except Exception as e:
                 raise e
@@ -73,8 +77,8 @@ class TranscriptionController(Resource):
             path = join(self.UPLOAD_FOLDER, filename)
             file.save(path)
             try:
-                if 'speaker-diarization' in features:
-                    return transcribe_with_speaker(path)
+                if 'speaker' in features:
+                    return transcribe_with_speaker(path, features)
                 else:
                     return transcribe(path)
             except Exception as e:

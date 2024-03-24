@@ -3,7 +3,7 @@ import re
 
 import numpy as np
 import whisper
-from pyannote.audio import Pipeline
+from pyannote.audio import Inference, Model, Pipeline
 from pydub import AudioSegment
 
 
@@ -14,6 +14,8 @@ def millisec(timeStr):
 
 model = whisper.load_model("medium")
 pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1', use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
+embedding_model = Model.from_pretrained("pyannote/embedding", use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
+inference = Inference(embedding_model, window='whole')
 
 
 class Audio:
@@ -30,6 +32,10 @@ class Audio:
         transcription = model.transcribe(input)
         return transcription
     
+    def embed(self):
+        embedding = inference(self.path)
+        return embedding
+    
     def diarize_speaker(self):
         result = pipeline({ 'audio': self.path })
         dz_path = f'{self.base_path}-dz.txt'
@@ -42,6 +48,7 @@ class Audio:
         except Exception as e:
             raise e
         finally:
+            pass
             os.remove(dz_path)
 
         # Grouping
