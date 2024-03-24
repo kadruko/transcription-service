@@ -3,6 +3,7 @@ import re
 
 import numpy as np
 import whisper
+from dotenv import load_dotenv
 from pyannote.audio import Inference, Model, Pipeline
 from pydub import AudioSegment
 
@@ -11,6 +12,9 @@ def millisec(timeStr):
     spl = timeStr.split(":")
     s = (int)((int(spl[0]) * 60 * 60 + int(spl[1]) * 60 + float(spl[2]) )* 1000)
     return s
+
+
+load_dotenv()
 
 model = whisper.load_model("medium")
 pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1', use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
