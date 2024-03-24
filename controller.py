@@ -53,8 +53,8 @@ class TranscriptionController(Resource):
                     response.append({
                         'speaker': s[0].split()[-1],
                         'transcription': transcription,
-                        'start': start / 1000,
-                        'end': end / 1000
+                        'start': start,
+                        'end': end
                     })
                 return response
             except Exception as e:
@@ -65,7 +65,9 @@ class TranscriptionController(Resource):
                     remove(p)
 
         file = request.files['audio']
-        features = request.form['features'].replace(' ', '').split(',')
+        features = []
+        if 'features' in request.form:
+            features = request.form['features'].replace(' ', '').split(',')
         if file and self.allowed_file(file.filename):
             filename = f'{uuid4()}.pcm'
             path = join(self.UPLOAD_FOLDER, filename)
