@@ -13,13 +13,16 @@ def millisec(timeStr):
     return s
 
 model = whisper.load_model("medium")
-pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization', use_auth_token=os.environ['HUGGINGFACE_TOKEN'])
+pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1', use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
 
 
 class Audio:
     def __init__(self, path):
         self.path = path
-        self.audio = AudioSegment.from_file(self.path, "pcm", sample_width=16, frame_rate=16000, channels=1)
+        self.name = path.split('/')[-1].split('.')[0]
+        self.base_path = path.split('.')[0]
+        self.format = path.split('.')[-1]
+        self.audio = AudioSegment.from_file(self.path, self.format, sample_width=16, frame_rate=16000, channels=1)
 
     def transcribe(self):
         input = np.frombuffer(self.audio.raw_data, np.int16).flatten().astype(np.float32) / 32768.0
@@ -28,7 +31,18 @@ class Audio:
         return transcription
     
     def diarize_speaker(self):
-        dzs = pipeline(self.path)
+        result = pipeline({ 'audio': self.path })
+        dz_path = f'{self.base_path}-dz.txt'
+
+        with open(dz_path, "w") as text_file:
+            text_file.write(str(result))
+        
+        try:
+            dzs = open(dz_path).read().splitlines()
+        except Exception as e:
+            raise e
+        finally:
+            os.remove(dz_path)
 
         # Grouping
         groups = []
@@ -51,3 +65,5 @@ class Audio:
             lastend = end
         if g:
             groups.append(g)
+        
+        return groups
