@@ -52,29 +52,16 @@ class Audio:
         except Exception as e:
             raise e
         finally:
-            pass
             os.remove(dz_path)
 
-        # Grouping
         groups = []
-        g = []
-        lastend = 0
+        group = []
+        for dz in dzs:
+            if len(group) == 0 or group[0].split()[-1] == dz.split()[-1]:
+                group.append(dz)
+            else:
+                groups.append(group)
+                group = [dz]
+        groups.append(group)
 
-        for d in dzs:   
-            if g and (g[0].split()[-1] != d.split()[-1]):      #same speaker
-                groups.append(g)
-                g = []
-        
-        g.append(d)
-        
-        end = re.findall('[0-9]+:[0-9]+:[0-9]+\.[0-9]+', string=d)[1]
-        end = millisec(end)
-        if lastend > end:       #segment engulfed by a previous segment
-            groups.append(g)
-            g = [] 
-        else:
-            lastend = end
-        if g:
-            groups.append(g)
-        
         return groups
