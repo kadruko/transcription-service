@@ -1,11 +1,12 @@
 import os
-import re
+from pathlib import Path
 
 import numpy as np
 import whisper
 from dotenv import load_dotenv
-from pyannote.audio import Inference, Model, Pipeline
+from pyannote.audio import Pipeline
 from pydub import AudioSegment
+from resemblyzer import VoiceEncoder, preprocess_wav
 
 
 def millisec(timeStr):
@@ -18,8 +19,7 @@ load_dotenv()
 
 model = whisper.load_model("medium")
 pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization-3.1', use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
-embedding_model = Model.from_pretrained("pyannote/embedding", use_auth_token=os.environ['HUGGINGFACE_ACCESS_TOKEN'])
-inference = Inference(embedding_model, window='whole')
+encoder = VoiceEncoder()
 
 
 class Audio:
@@ -37,7 +37,9 @@ class Audio:
         return transcription
     
     def embed(self):
-        embedding = inference(self.path)
+        path = Path(self.path)
+        wav = preprocess_wav(path)
+        embedding = encoder.embed_utterance(wav)
         return embedding
     
     def diarize_speaker(self):

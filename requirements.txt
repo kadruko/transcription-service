@@ -6,3 +6,4 @@ openai-whisper
 pydub
 numpy
 pyannote.audio
+Resemblyzer
