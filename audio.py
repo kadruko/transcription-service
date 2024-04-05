@@ -28,10 +28,15 @@ class Audio:
         self.name = path.split('/')[-1].split('.')[0]
         self.base_path = path.split('.')[0]
         self.format = path.split('.')[-1]
-        self.audio = AudioSegment.from_file(self.path, self.format, sample_width=16, frame_rate=16000, channels=1)
+        if self.format == 'pcm':
+            self.audio = AudioSegment.from_file(self.path, self.format, sample_width=16, frame_rate=16000, channels=1)
+        else:
+            self.audio = AudioSegment.from_file(self.path, self.format)
 
     def transcribe(self):
-        input = np.frombuffer(self.audio.raw_data, np.int16).flatten().astype(np.float32) / 32768.0
+        input = self.path
+        if self.format == 'pcm':
+            input = np.frombuffer(self.audio.raw_data, np.int16).flatten().astype(np.float32) / 32768.0
 
         transcription = model.transcribe(input)
         return transcription
