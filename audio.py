@@ -48,9 +48,22 @@ class Audio:
         return embedding
     
     def diarize_speaker(self):
-        result = pipeline({ 'audio': self.path })
-        dz_path = f'{self.base_path}-dz.txt'
+        def match_target_amplitude(sound, target_dBFS):
+            change_in_dBFS = target_dBFS - sound.dBFS
+            return sound.apply_gain(change_in_dBFS)
 
+        dz_audio_path = f'{self.base_path}-dz.{self.format}'
+        dz_audio = match_target_amplitude(self.audio, -20.0)
+        dz_audio.export(dz_audio_path, format=self.format)
+
+        try:
+            result = pipeline({ 'audio': dz_audio_path })
+        except Exception as e:
+            raise e
+        finally:
+            os.remove(dz_audio_path)
+
+        dz_path = f'{self.base_path}-dz.txt'
         with open(dz_path, "w") as text_file:
             text_file.write(str(result))
         
